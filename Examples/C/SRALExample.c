@@ -629,6 +629,19 @@ int main(void) {
 
 	CHECK(engines_to_exclude == new_engines_to_exclude, "Engines exclude set/get matches", "Engines exclude set/get mismatch");
 
+	// Regression check: excluding the whole TTS category must never leave a TTS
+	// engine selected as current. Previously a sticky fallback engine (e.g. NS
+	// Speech) could keep speaking through TTS after it had been excluded.
+	CHECK_SRAL(SRAL_SetEnginesExclude(SRAL_GetTTSEngines()), "Excluded the TTS engine category.");
+	int current_with_tts_excluded = SRAL_GetCurrentEngine();
+	printf("  Current engine with TTS excluded: %s (0x%X)\n",
+		SRAL_GetEngineName(current_with_tts_excluded) ? SRAL_GetEngineName(current_with_tts_excluded) : "None",
+		current_with_tts_excluded);
+	CHECK((current_with_tts_excluded & SRAL_GetTTSEngines()) == 0,
+		"No TTS engine is current while the TTS category is excluded.",
+		"A TTS engine is still current despite the TTS category being excluded!");
+	SRAL_SetEnginesExclude(engines_to_exclude); // Restore the prior exclude state.
+
 
 	TEST_SECTION("Unregister Keyboard Hooks");
 	SRAL_UnregisterKeyboardHooks();

@@ -336,7 +336,15 @@ static BOOL FindProcess(const wchar_t* name) {
 
 #endif
 static void speech_engine_update() {
-	if (!g_currentEngine || !g_currentEngine->GetActive() || g_currentEngine->GetNumber() == SRAL_ENGINE_SAPI || g_currentEngine->GetNumber() == SRAL_ENGINE_UIA || g_currentEngine->GetNumber() == SRAL_ENGINE_AV_SPEECH || g_currentEngine->GetNumber() == SRAL_ENGINE_ANDROID_TEXT_TO_SPEECH) {
+	// Re-evaluate the current engine whenever it is unset, no longer active, a
+	// TTS engine, or UIA. Screen readers are sticky once chosen; the lower
+	// priority engines (TTS / UIA) must keep yielding to a screen reader that
+	// appears, and must also react to changes in g_excludes. Deriving the TTS
+	// set from SRAL_GetTTSEngines() keeps this in sync as engines are added.
+	if (!g_currentEngine
+		|| !g_currentEngine->GetActive()
+		|| (g_currentEngine->GetNumber() & SRAL_GetTTSEngines())
+		|| g_currentEngine->GetNumber() == SRAL_ENGINE_UIA) {
 #if defined(_WIN32) && !defined(SRAL_NO_UIA)
 		if (FindProcess(L"narrator.exe") == TRUE) {
 			g_currentEngine = get_engine(SRAL_ENGINE_UIA);
@@ -344,6 +352,10 @@ static void speech_engine_update() {
 		}
 		else {
 #endif
+			// Clear first: if no active, non-excluded engine qualifies there is
+			// genuinely nothing to speak through, and g_currentEngine must not
+			// keep pointing at a stale (e.g. excluded) engine.
+			g_currentEngine = nullptr;
 			for (const auto& [value, ptr] : g_engines) {
 				if (ptr->GetActive() && !(g_excludes & value)) {
 					g_currentEngine = ptr.get();
