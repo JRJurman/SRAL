@@ -521,6 +521,39 @@ SRAL_ENGINE_ANDROID_TEXT_TO_SPEECH = 1 << 12
 
 
 	/**
+* @brief Get the bitmask of engines that are pure text-to-speech synthesizers
+* (e.g., SAPI, Speech Dispatcher, NSSpeech, AVSpeech, Android TextToSpeech).
+*
+* Intended use: pass to SRAL_SetEnginesExclude when the application wants to
+* opt out of TTS output (for instance, only speaking through a screen reader
+* unless the user has enabled an in-app TTS option).
+*
+* @return Bitmask of TTS engines defined by the SRAL_Engines enumeration.
+*/
+
+
+	SRAL_API int SRAL_GetTTSEngines(void);
+
+
+
+	/**
+* @brief Get the bitmask of engines that represent assistive technology
+* (screen readers and the accessibility frameworks that drive them, e.g.,
+* NVDA, JAWS, ZDSR, Narrator, UIA, VoiceOver, Android AccessibilityManager).
+*
+* When any of these engines is active, output is routed to the user's
+* configured assistive tech (which itself handles speech and braille
+* per the user's preferences).
+*
+* @return Bitmask of assistive-tech engines defined by the SRAL_Engines enumeration.
+*/
+
+
+	SRAL_API int SRAL_GetAssistiveTechEngines(void);
+
+
+
+	/**
  * @brief Get name of the specified engine.
  * @param engine The identifier of the engine to query.
  * @return a pointer to the name.

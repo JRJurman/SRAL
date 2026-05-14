@@ -202,6 +202,23 @@ func GetActiveEngines() Engine {
 	return Engine(engines)
 }
 
+// GetTTSEngines returns a bitmask of engines that are pure text-to-speech
+// synthesizers (e.g., SAPI, Speech Dispatcher, NSSpeech, AVSpeech, Android TTS).
+//
+// Pass this to SetEnginesExclude when the application wants to opt out of TTS
+// output (for instance, only speaking through a screen reader unless the user
+// has enabled an in-app TTS option).
+func GetTTSEngines() Engine {
+	return Engine(C.SRAL_GetTTSEngines())
+}
+
+// GetAssistiveTechEngines returns a bitmask of engines that represent assistive
+// technology — screen readers and the accessibility frameworks that drive them
+// (e.g., NVDA, JAWS, ZDSR, Narrator, UIA, VoiceOver, Android AccessibilityManager).
+func GetAssistiveTechEngines() Engine {
+	return Engine(C.SRAL_GetAssistiveTechEngines())
+}
+
 // GetEngineName returns the name of the specified engine.
 func GetEngineName(engine Engine) string {
 	cName := C.SRAL_GetEngineName(C.int(engine))

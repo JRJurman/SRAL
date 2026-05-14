@@ -27,8 +27,12 @@ const (
 	NSSpeechEngine
 	// AVSpeechEngine — AVFoundation Speech Synthesizer (AVSpeechSynthesizer) for Apple platforms.
 	AVSpeechEngine
+	// AndroidAccessibilityManagerEngine — Android AccessibilityManager, drives the active screen reader (typically TalkBack).
+	AndroidAccessibilityManagerEngine
+	// AndroidTextToSpeechEngine — Android TextToSpeech synthesizer.
+	AndroidTextToSpeechEngine
 	// AllEngines is a bitmask of all supported engines.
-	AllEngines Engine = NVDAEngine | JAWSEngine | ZDSREngine | NarratorEngine | UIAEngine | SAPIEngine | SpeechDispatcherEngine | NSSpeechEngine | VoiceOverEngine | AVSpeechEngine
+	AllEngines Engine = NVDAEngine | JAWSEngine | ZDSREngine | NarratorEngine | UIAEngine | SAPIEngine | SpeechDispatcherEngine | NSSpeechEngine | VoiceOverEngine | AVSpeechEngine | AndroidAccessibilityManagerEngine | AndroidTextToSpeechEngine
 	// InvalidEngine represents an error or uninitialized engine state.
 	InvalidEngine Engine = -1
 	// NoSpecifiedEngine is used for auto-selection of the engine.

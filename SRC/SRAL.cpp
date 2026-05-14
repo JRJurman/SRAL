@@ -622,6 +622,24 @@ extern "C" SRAL_API int SRAL_GetActiveEngines(void) {
 	return mask;
 }
 
+extern "C" SRAL_API int SRAL_GetTTSEngines(void) {
+	return SRAL_ENGINE_SAPI
+		| SRAL_ENGINE_SPEECH_DISPATCHER
+		| SRAL_ENGINE_NS_SPEECH
+		| SRAL_ENGINE_AV_SPEECH
+		| SRAL_ENGINE_ANDROID_TEXT_TO_SPEECH;
+}
+
+extern "C" SRAL_API int SRAL_GetAssistiveTechEngines(void) {
+	return SRAL_ENGINE_NVDA
+		| SRAL_ENGINE_JAWS
+		| SRAL_ENGINE_ZDSR
+		| SRAL_ENGINE_NARRATOR
+		| SRAL_ENGINE_UIA
+		| SRAL_ENGINE_VOICE_OVER
+		| SRAL_ENGINE_ANDROID_ACCESSIBILITY_MANAGER;
+}
+
 
 extern "C" SRAL_API const char* SRAL_GetEngineName(int engine) {
 	switch (static_cast<SRAL_Engines>(engine)) {
