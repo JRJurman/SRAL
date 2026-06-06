@@ -336,15 +336,17 @@ static BOOL FindProcess(const wchar_t* name) {
 
 #endif
 static void speech_engine_update() {
-	// Re-evaluate the current engine whenever it is unset, no longer active, a
-	// TTS engine, or UIA. Screen readers are sticky once chosen; the lower
-	// priority engines (TTS / UIA) must keep yielding to a screen reader that
-	// appears, and must also react to changes in g_excludes. Deriving the TTS
-	// set from SRAL_GetTTSEngines() keeps this in sync as engines are added.
+	// Re-evaluate the current engine whenever it is unset, no longer active, or
+	// belongs to a lower-priority category (a text-to-speech engine or an
+	// accessibility provider such as UIA). Screen readers are sticky once
+	// chosen; the lower-priority engines must keep yielding to a screen reader
+	// that appears, and must also react to changes in g_excludes. Asking the
+	// engine its own category keeps this in sync as new engines are added.
+	int category = g_currentEngine ? g_currentEngine->GetCategory() : SRAL_ENGINE_CATEGORY_UNKNOWN;
 	if (!g_currentEngine
 		|| !g_currentEngine->GetActive()
-		|| (g_currentEngine->GetNumber() & SRAL_GetTTSEngines())
-		|| g_currentEngine->GetNumber() == SRAL_ENGINE_UIA) {
+		|| category == SRAL_ENGINE_CATEGORY_TEXT_TO_SPEECH_ENGINE
+		|| category == SRAL_ENGINE_CATEGORY_ACCESSIBILITY_PROVIDER) {
 #if defined(_WIN32) && !defined(SRAL_NO_UIA)
 		if (FindProcess(L"narrator.exe") == TRUE) {
 			g_currentEngine = get_engine(SRAL_ENGINE_UIA);
@@ -634,22 +636,33 @@ extern "C" SRAL_API int SRAL_GetActiveEngines(void) {
 	return mask;
 }
 
+extern "C" SRAL_API SRAL_EngineCategory SRAL_GetEngineCategory(int engine) {
+	if (!SRAL_IsInitialized()) return SRAL_ENGINE_CATEGORY_UNKNOWN;
+	Sral::Engine* e = get_engine(engine);
+	return e ? static_cast<SRAL_EngineCategory>(e->GetCategory()) : SRAL_ENGINE_CATEGORY_UNKNOWN;
+}
+
 extern "C" SRAL_API int SRAL_GetTTSEngines(void) {
-	return SRAL_ENGINE_SAPI
-		| SRAL_ENGINE_SPEECH_DISPATCHER
-		| SRAL_ENGINE_NS_SPEECH
-		| SRAL_ENGINE_AV_SPEECH
-		| SRAL_ENGINE_ANDROID_TEXT_TO_SPEECH;
+	if (g_engines.empty())return 0;
+	int mask = 0;
+	for (const auto& [value, ptr] : g_engines) {
+		if (ptr && ptr->GetCategory() == SRAL_ENGINE_CATEGORY_TEXT_TO_SPEECH_ENGINE)
+			mask |= value;
+	}
+	return mask;
 }
 
 extern "C" SRAL_API int SRAL_GetAssistiveTechEngines(void) {
-	return SRAL_ENGINE_NVDA
-		| SRAL_ENGINE_JAWS
-		| SRAL_ENGINE_ZDSR
-		| SRAL_ENGINE_NARRATOR
-		| SRAL_ENGINE_UIA
-		| SRAL_ENGINE_VOICE_OVER
-		| SRAL_ENGINE_ANDROID_ACCESSIBILITY_MANAGER;
+	if (g_engines.empty())return 0;
+	int mask = 0;
+	for (const auto& [value, ptr] : g_engines) {
+		if (!ptr) continue;
+		int category = ptr->GetCategory();
+		if (category == SRAL_ENGINE_CATEGORY_SCREEN_READER
+			|| category == SRAL_ENGINE_CATEGORY_ACCESSIBILITY_PROVIDER)
+			mask |= value;
+	}
+	return mask;
 }
 
 

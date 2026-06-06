@@ -72,6 +72,24 @@ func (f Feature) IsSupported(other Feature) bool {
 	return (f & other) != 0
 }
 
+// EngineCategory is the broad category an engine belongs to. Unlike Engine,
+// these values are not bit flags; an engine has exactly one category.
+type EngineCategory int
+
+const (
+	// UnknownCategory indicates the category is unknown, or the engine is not
+	// available/initialized.
+	UnknownCategory EngineCategory = iota
+	// ScreenReaderCategory — a screen reader (e.g. NVDA, JAWS, ZDSR, VoiceOver).
+	ScreenReaderCategory
+	// TextToSpeechCategory — a pure text-to-speech synthesizer (e.g. SAPI,
+	// Speech Dispatcher, NSSpeech, AVSpeech, Android TextToSpeech).
+	TextToSpeechCategory
+	// AccessibilityProviderCategory — an accessibility provider that drives
+	// whatever assistive tech is consuming it (e.g. UIA, Android AccessibilityManager).
+	AccessibilityProviderCategory
+)
+
 // EngineParam defines parameters that can be set or retrieved from a speech engine.
 type EngineParam int
 

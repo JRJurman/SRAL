@@ -53,6 +53,15 @@ void PrintEngineNames(int engineBitmask, const char* title) {
 	printf("\n");
 }
 
+const char* CategoryName(int category) {
+	switch (category) {
+		case SRAL_ENGINE_CATEGORY_SCREEN_READER: return "Screen Reader";
+		case SRAL_ENGINE_CATEGORY_TEXT_TO_SPEECH_ENGINE: return "Text-To-Speech Engine";
+		case SRAL_ENGINE_CATEGORY_ACCESSIBILITY_PROVIDER: return "Accessibility Provider";
+		default: return "Unknown";
+	}
+}
+
 void print_supported_features(int features) {
 	printf("Supported Features (0x%X):\n", features);
 	if (features == 0) {
@@ -134,6 +143,14 @@ int main(void) {
 	CHECK((tts_engines & at_engines) == 0,
 		"TTS and assistive-tech masks are disjoint.",
 		"TTS and assistive-tech masks overlap!");
+
+	printf("\nCategory of each available engine (SRAL_GetEngineCategory):\n");
+	for (int e_val = SRAL_ENGINE_NVDA; e_val <= SRAL_ENGINE_ANDROID_TEXT_TO_SPEECH; e_val <<= 1) {
+		if (available_engines & e_val) {
+			printf("  - %s: %s\n", SRAL_GetEngineName(e_val), CategoryName(SRAL_GetEngineCategory(e_val)));
+		}
+	}
+	printf("\n");
 
 	int current_engine_id = SRAL_GetCurrentEngine();
 	printf("Current Default Engine: %s (0x%X)\n", SRAL_GetEngineName(current_engine_id) ? SRAL_GetEngineName(current_engine_id) : "None/Unknown", current_engine_id);
